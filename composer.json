@@ -1,0 +1,21 @@
+{
+    "name": "setasign/phpcs-teamcity-report",
+    "description": "",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Setasign",
+            "email": "support@setasign.com"
+        }
+    ],
+
+    "require": {
+        "php": "^7.1",
+        "squizlabs/php_codesniffer": "3.*"
+    },
+
+    "autoload": {
+        "setasign\\PhpcsTeamcityReport\\": "src/"
+    }
+}
