@@ -16,6 +16,8 @@
     },
 
     "autoload": {
-        "setasign\\PhpcsTeamcityReport\\": "src/"
+        "psr-4": {
+            "setasign\\PhpcsTeamcityReport\\": "src/"
+        }
     }
 }
