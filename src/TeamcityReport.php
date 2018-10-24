@@ -18,7 +18,6 @@ class TeamcityReport implements Report
 
     public function generateFileReport($report, File $phpcsFile, $showSources = false, $width = 80)
     {
-        $filename = $phpcsFile->getFilename();
         $warningCount = $phpcsFile->getWarningCount();
         $errorCount = $phpcsFile->getErrorCount();
         if ($warningCount === 0 && $errorCount === 0) {
@@ -34,7 +33,7 @@ class TeamcityReport implements Report
                             'id' => $error['source'],
                             'name' => $error['source'],
                             'category' => 'CodeSniffer',
-                            'description' => '',
+                            'description' => 'CodeSniffer inspection',
                         ]);
                     }
 
@@ -48,7 +47,7 @@ class TeamcityReport implements Report
 
                     echo $this->createTeamCityLine('inspection', [
                         'typeId' => $error['source'],
-                        'file' => $filename,
+                        'file' => $report['filename'],
                         'line' => $line,
                         'message' => $error['message'],
                         'SEVERITY' => $error['type'],
