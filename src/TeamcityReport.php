@@ -29,10 +29,15 @@ class TeamcityReport implements Report
             foreach ($lineErrors as $column => $colErrors) {
                 foreach ($colErrors as $error) {
                     if (!\array_key_exists($error['source'], $this->inspectionTypes)) {
+                        $category = 'CodeSniffer';
+                        if (\preg_match('~^([^\.]\.[^\.])\.[^\.]\.[^\.]$~', $error['source'], $matches) === 1) {
+                            $category .= ' ' . $matches[1];
+                        }
+
                         $this->inspectionTypes[$error['source']] = $this->createTeamCityLine('inspectionType', [
                             'id' => $error['source'],
                             'name' => $error['source'],
-                            'category' => 'CodeSniffer',
+                            'category' => $category,
                             'description' => 'CodeSniffer inspection',
                         ]);
                     }
