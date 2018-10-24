@@ -30,7 +30,7 @@ class TeamcityReport implements Report
                 foreach ($colErrors as $error) {
                     if (!\array_key_exists($error['source'], $this->inspectionTypes)) {
                         $category = 'CodeSniffer';
-                        if (\preg_match('~^([^\.]\.[^\.])\.[^\.]\.[^\.]$~', $error['source'], $matches) === 1) {
+                        if (\preg_match('~^([^\.]+\.[^\.]+)\.[^\.]+\.[^\.]+$~', $error['source'], $matches) === 1) {
                             $category .= ' ' . $matches[1];
                         }
 
