@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace setasign\PhpcsTeamcityReport;
@@ -16,7 +17,7 @@ class TeamcityReport implements Report
      */
     protected $inspectionTypes = [];
 
-    public function generateFileReport($report, File $phpcsFile, $showSources = false, $width = 80)
+    public function generateFileReport(array $report, File $phpcsFile, bool $showSources = false, int $width = 80): bool
     {
         $warningCount = $phpcsFile->getWarningCount();
         $errorCount = $phpcsFile->getErrorCount();
@@ -26,12 +27,33 @@ class TeamcityReport implements Report
         }
 
         foreach ($report['messages'] as $line => $lineErrors) {
-            foreach ($lineErrors as $column => $colErrors) {
+            foreach ($lineErrors as $colErrors) {
                 foreach ($colErrors as $error) {
+                    if ($phpcsFile->config->encoding !== 'utf-8') {
+                        $error['source'] = \mb_convert_encoding(
+                            $error['source'],
+                            'utf-8',
+                            $phpcsFile->config->encoding
+                        );
+                        $error['message'] = \mb_convert_encoding(
+                            $error['message'],
+                            'utf-8',
+                            $phpcsFile->config->encoding
+                        );
+                    }
+
+                    if (\mb_strlen($error['source'], 'utf-8') > 255) {
+                        $error['source'] = \mb_substr($error['source'], 0, 255, 'utf-8');
+                    }
+
                     if (!\array_key_exists($error['source'], $this->inspectionTypes)) {
                         $category = 'CodeSniffer';
-                        if (\preg_match('~^([^\.]+\.[^\.]+)\.[^\.]+\.[^\.]+$~', $error['source'], $matches) === 1) {
+                        if (\preg_match('~^([^.]+\.[^.]+)\.[^.]+\.[^.]+$~u', $error['source'], $matches) === 1) {
                             $category .= ' ' . $matches[1];
+                        }
+
+                        if (\mb_strlen($category, 'utf-8') > 255) {
+                            $category = \mb_substr($category, 0, 255, 'utf-8');
                         }
 
                         $this->inspectionTypes[$error['source']] = $this->createTeamCityLine('inspectionType', [
@@ -42,21 +64,12 @@ class TeamcityReport implements Report
                         ]);
                     }
 
-                    if ($phpcsFile->config->encoding !== 'utf-8') {
-                        $error['message'] = \mb_convert_encoding(
-                            $error['message'],
-                            'utf-8',
-                            $phpcsFile->config->encoding
-                        );
-                    }
-
                     echo $this->createTeamCityLine('inspection', [
                         'typeId' => $error['source'],
                         'file' => $report['filename'],
                         'line' => $line,
                         'message' => $error['message'],
                         'SEVERITY' => $error['type'],
-                        'fixable' => $error['fixable']
                     ]);
                 }
             }
@@ -66,15 +79,15 @@ class TeamcityReport implements Report
     }
 
     public function generate(
-        $cachedData,
-        $totalFiles,
-        $totalErrors,
-        $totalWarnings,
-        $totalFixable,
-        $showSources = false,
-        $width = 80,
-        $interactive = false,
-        $toScreen = true
+        string $cachedData,
+        int $totalFiles,
+        int $totalErrors,
+        int $totalWarnings,
+        int $totalFixable,
+        bool $showSources = false,
+        int $width = 80,
+        bool $interactive = false,
+        bool $toScreen = true
     ) {
         foreach ($this->inspectionTypes as $inspectionType) {
             echo $inspectionType;
@@ -86,10 +99,10 @@ class TeamcityReport implements Report
      * Creates a TeamCity report line
      *
      * @param string $messageName The message name
-     * @param mixed[] $keyValuePairs The key=>value pairs
+     * @param array $keyValuePairs The key=>value pairs
      * @return string The TeamCity report line
      */
-    private function createTeamCityLine($messageName, array $keyValuePairs): string
+    private function createTeamCityLine(string $messageName, array $keyValuePairs): string
     {
         $string = '##teamcity[' . $messageName;
         foreach ($keyValuePairs as $key => $value) {

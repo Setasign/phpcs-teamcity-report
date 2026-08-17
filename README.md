@@ -14,8 +14,8 @@ Or:
 ```
 {
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.0",
-        "setasign/phpcs-teamcity-report": "^1.0"
+        "squizlabs/php_codesniffer": "^4.0",
+        "setasign/phpcs-teamcity-report": "^1.1"
     }
 }
 ```
